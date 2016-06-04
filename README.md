@@ -1,9 +1,10 @@
-[ReactJS](http://facebook.github.io/react/)
+# Redux: Getting Started
+Following along with [Dan Abramov's course on Egghead.io](https://egghead.io/courses/getting-started-with-redux).
 
-### Notes
+## Notes
 Just started video #9.
 
-### Run
+## Run
 Start the server
 
 ```
