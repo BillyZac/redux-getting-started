@@ -2,54 +2,55 @@ import { createStore } from 'redux'
 import React from 'react'
 import { render } from 'react-dom'
 
-import './to-do'
-
-const counter = (state = 0, action) => {
+const todo = (state, action) => {
   switch (action.type) {
-    case 'INCREMENT':
-      console.log(state);
-      return state + 1
-    case 'DECREMENT':
-      console.log('decrementing...', state);
-
-      return state - 1
+    case 'ADD_TODO':
+      return {
+        id: action.id,
+        text: action.text,
+        completed: false
+      }
+    case 'TOGGLE_TODO':
+      if (state.id !== action.id) {
+        return state
+      }
+      return {
+        ...state,
+        completed: !state.completed
+      }
     default:
       return state
   }
 }
 
-const store = createStore(counter)
-
-const Counter = ({
-  value,
-  onIncrement,
-  onDecrement
-}) => (
-  <div>
-    <h1>{value}</h1>
-    <button onClick={onIncrement}>+</button>
-    <button onClick={onDecrement}>-</button>
-  </div>
-)
-
-const renderIt = () => {
-  render(
-    <Counter
-      value={store.getState()}
-      onIncrement={() =>
-        store.dispatch({
-          type: 'INCREMENT'
-        })
-      }
-      onDecrement={() =>
-        store.dispatch({
-          type: 'DECREMENT'
-        })
-      }
-    />,
-  document.getElementById('app')
-  )
+const todos = (state = [], action) => {
+  switch (action.type) {
+    case 'ADD_TODO':
+      return [
+        ...state,
+        todo(undefined, action)
+      ]
+    case 'TOGGLE_TODO':
+      return state.map(t => todo(t, action))
+    default:
+      return state
+  }
 }
 
-renderIt()
-store.subscribe(renderIt)
+
+const store = createStore(todos)
+
+console.log('Initial state');
+console.log(store.getState());
+console.log('--------------');
+
+console.log('Dispatching ADD_TODO');
+store.dispatch({
+  type: 'ADD_TODO',
+  id: 0,
+  text: 'Do it.'
+})
+
+console.log('Current state');
+console.log(store.getState());
+console.log('--------------');
