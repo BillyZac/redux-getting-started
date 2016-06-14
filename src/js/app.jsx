@@ -2,6 +2,7 @@ import { createStore } from 'redux'
 import React from 'react'
 import { render } from 'react-dom'
 
+import './to-do'
 
 const counter = (state = 0, action) => {
   switch (action.type) {
@@ -46,7 +47,7 @@ const renderIt = () => {
         })
       }
     />,
-    document.getElementById('root')
+  document.getElementById('app')
   )
 }
 

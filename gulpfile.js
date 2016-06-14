@@ -18,7 +18,7 @@ gulp.task('js', ['clean'], function() {
     extensions: [".jsx", ".js"],
     entries: 'src/js/app.jsx'
   })
-    .transform(babelify.configure({ presets: ["es2015", 'react'] }))
+    .transform(babelify.configure({ presets: ["es2015", 'react', 'stage-2'] }))
     .bundle()
     .on("error", function(err) { console.log("Error: " + err.message); })
     .pipe(source('bundle.js'))
