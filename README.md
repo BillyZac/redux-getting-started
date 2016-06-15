@@ -1,6 +1,8 @@
 # Redux: Getting Started
 Following along with [Dan Abramov's course on Egghead.io](https://egghead.io/courses/getting-started-with-redux).
 
+I'm importing React, ReactDOM, and Redux at the versions used in the tutorial. If you look in package.json, you'll see that they're locked at these very specific versions. 
+
 ## Notes
 Just started video #9.
 
