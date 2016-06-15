@@ -59,9 +59,46 @@ const store = createStore(todoApp)
 
 const { Component } = React
 
+const FilterLink = ({
+  filter,
+  children
+}) => {
+  return (
+    <a href='#'
+      onClick={event => {
+        event.preventDefault()
+        store.dispatch({
+          type: 'SET_VISIBILITY_FILTER',
+          filter
+        })
+      }}
+    >
+        {children}
+    </a>
+  )
+}
+
+const getVisibleTodos = (
+  todos,
+  filter
+) => {
+  switch (filter) {
+    case 'SHOW_ALL':
+      return todos
+    case 'SHOW_COMPLETED':
+      return todos.filter(t => t.completed)
+    case 'SHOW_ACTIVE':
+      return todos.filter(t => !t.completed)
+  }
+}
+
 let nextTodoId = 0
 class TodoApp extends Component {
   render() {
+    const visibleTodos = getVisibleTodos(
+      this.props.todos,
+      this.props.visibilityFilter
+    )
     return (
       <div>
         <input ref={node => {
@@ -76,7 +113,7 @@ class TodoApp extends Component {
             this.input.value = ''
           }}>Add item</button>
         <ul>
-          {this.props.todos.map(todo =>
+          {visibleTodos.map(todo =>
             <li
               key={todo.id}
               onClick={() => {
@@ -92,6 +129,12 @@ class TodoApp extends Component {
             </li>
           )}
         </ul>
+        {'  '}
+        <FilterLink filter='SHOW_ALL'>All</FilterLink>
+        {'  '}
+        <FilterLink filter='SHOW_ACTIVE'>Active</FilterLink>
+        {'  '}
+        <FilterLink filter='SHOW_COMPLETED'>Completed</FilterLink>
       </div>
     )
   }
@@ -100,7 +143,7 @@ class TodoApp extends Component {
 const renderApp = () => {
   render(
     <TodoApp
-      todos={store.getState().todos}
+      {...store.getState()}
     />,
     document.getElementById('root')
   )
