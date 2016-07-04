@@ -2,6 +2,8 @@ import { createStore } from 'redux'
 import { combineReducers } from 'redux'
 import React from 'react'
 import { render } from 'react-dom'
+import { Provider } from 'react-redux'
+import { connect } from 'react-redux'
 
 const todo = (state, action) => {
   switch (action.type) {
@@ -55,17 +57,15 @@ const todoApp = combineReducers({
   visibilityFilter
 })
 
-const store = createStore(todoApp)
 
 const { Component } = React
 
-const FilterLink = ({
-  filter,
+const Link = ({
+  active,
   children,
-  currentFilter,
   onClick
 }) => {
-  if (filter === currentFilter) {
+  if (active) {
     return (
       <span>{children}</span>
     )
@@ -74,7 +74,7 @@ const FilterLink = ({
     <a href='#'
       onClick={event => {
         event.preventDefault()
-        onClick(filter)
+        onClick()
       }}
     >
         {children}
@@ -82,7 +82,23 @@ const FilterLink = ({
   )
 }
 
-const AddTodo = ({ onAddclick }) => {
+const mapStateToLinkProps = (state, ownProps) => ({
+  active: ownProps.filter === state.visibilityFilter
+})
+const mapDispatchToLinkProps = (dispatch, ownProps) => ({
+  onClick: () => {
+    dispatch({
+      type: 'SET_VISIBILITY_FILTER',
+      filter: ownProps.filter
+    })
+  }
+})
+const FilterLink = connect(
+  mapStateToLinkProps,
+  mapDispatchToLinkProps
+)(Link)
+
+let AddTodo = ({ dispatch }) => {
   let input
   return (
     <div>
@@ -90,12 +106,18 @@ const AddTodo = ({ onAddclick }) => {
           input = node
         }} />
       <button onClick={() => {
-          onAddclick(input.value)
+          dispatch({
+            type: 'ADD_TODO',
+            id: nextTodoId++,
+            text: input.value
+          })
           input.value=''
         }}>Add item</button>
     </div>
   )
 }
+
+AddTodo = connect()(AddTodo)
 
 const getVisibleTodos = (
   todos,
@@ -141,79 +163,66 @@ const TodoList = ({
   </ul>
 )
 
-const Footer = ({
-  visibilityFilter,
-  onFilterClick
-}) => (
+const Footer = () => (
   <div>
     {'  '}
     <FilterLink
       filter='SHOW_ALL'
-      currentFilter={visibilityFilter}
-      onClick={onFilterClick}
-      >All</FilterLink>
+    >All</FilterLink>
     {'  '}
     <FilterLink
       filter='SHOW_ACTIVE'
-      currentFilter={visibilityFilter}
-      onClick={onFilterClick}
-      >Active</FilterLink>
+    >Active</FilterLink>
     {'  '}
     <FilterLink
       filter='SHOW_COMPLETED'
-      currentFilter={visibilityFilter}
-      onClick={onFilterClick}
-      >Completed</FilterLink>
+    >Completed</FilterLink>
   </div>
 )
+
+let VisibleTodoList = ({todos, visibilityFilter, onTodoClick})  => {
+  return (
+    <TodoList
+      todos={todos}
+      onTodoClick={onTodoClick}/>
+  )
+}
+const mapTodoListStateToProps = state => (
+  {
+    todos: getVisibleTodos(
+      state.todos,
+      state.visibilityFilter
+    )
+  }
+)
+const mapTodoListDispatchToProps = dispatch => (
+  {
+    onTodoClick: id=>{
+      dispatch({
+        type: 'TOGGLE_TODO',
+        id
+      })
+    }
+  }
+)
+VisibleTodoList = connect(
+  mapTodoListStateToProps,
+  mapTodoListDispatchToProps
+)(VisibleTodoList)
 
 let nextTodoId = 0
 
-const TodoApp = ({
-  todos,
-  visibilityFilter
-}) => (
+const TodoApp = () => (
   <div>
-    <AddTodo
-      onAddclick={text => {
-        store.dispatch({
-          type: 'ADD_TODO',
-          id: nextTodoId++,
-          text,
-        })
-      }}
-    />
-    <TodoList
-      todos={getVisibleTodos(
-        todos,
-        visibilityFilter
-      )}
-      onTodoClick={(id)=>{
-        store.dispatch({
-          type: 'TOGGLE_TODO',
-          id
-        })
-      }}/>
-    <Footer
-      visibilityFilter={visibilityFilter}
-      onFilterClick={filter =>
-        store.dispatch({
-          type: 'SET_VISIBILITY_FILTER',
-          filter
-        })
-      }
-    />
+    <AddTodo />
+    <VisibleTodoList />
+    <Footer />
   </div>
 )
 
-const renderApp = () => {
-  render(
-    <TodoApp
-      {...store.getState()}
-    />,
-    document.getElementById('root')
-  )
-}
-
-store.subscribe(renderApp)
-renderApp()
+render(
+  <Provider store={createStore(todoApp)}>
+    <TodoApp />
+  </Provider>,
+  document.getElementById('root')
+)
